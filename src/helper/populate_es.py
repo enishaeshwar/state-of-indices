@@ -5,8 +5,7 @@ from elasticsearch import Elasticsearch
 from loguru import logger
 import uuid
 
-from src import es_client_util as es_util
-from src import common_util as common_util
+from src.util import common_util as common_util, es_client_util as es_util
 
 # Config file base path
 BASEPATH = "../"
