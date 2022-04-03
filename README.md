@@ -8,3 +8,6 @@ Required data:
 - Age of indices
 - Number of documents in each index
 - Flag indices that have both read and write aliases
+
+
+## How to run

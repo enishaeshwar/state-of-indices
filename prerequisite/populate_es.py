@@ -1,15 +1,26 @@
 import random
 import string
+import sys
 
+import yaml
 from elasticsearch import Elasticsearch
 from loguru import logger
 import uuid
 
-from src.util import common_util as common_util, es_client_util as es_util
 
-# Config file base path
-BASEPATH = "../"
-CONFIG_FILE_PATH = BASEPATH + "config/populate_es_config.yaml"
+def get_config(filepath, env):
+    """
+    Get config data
+    :return: config data
+    """
+    cfg = None
+    with open(filepath, "r") as yaml_file:
+        try:
+            cfg = yaml.safe_load(yaml_file)
+            config_data = cfg.get(env)
+        except yaml.YAMLError as exc:
+            print(exc)
+    return config_data
 
 
 def get_es_client(es_config) -> Elasticsearch:
@@ -21,9 +32,8 @@ def get_es_client(es_config) -> Elasticsearch:
     es_client = None
     try:
         es_client: Elasticsearch = Elasticsearch(
-            es_config.get('host', "localhost"),
-            port=es_config.get('port', 9200),
-            timeout=es_config.get('connection-timeout-ms', 30000),
+            f"http://{es_config.get('host')}:{es_config.get('port')}",
+            timeout=es_config.get('connection-timeout-ms')
         )
         es_client.info()
     except Exception as e:
@@ -79,10 +89,10 @@ def cleanup_es(indices_to_cleanup, es_client):
         es_client.indices.delete(index=index["name"], ignore=[400, 404])
 
 
-def populate_es(env: str):
-    config = common_util.get_config(CONFIG_FILE_PATH, env)
+def populate_es(env: str, config_filepath: str):
+    config = get_config(config_filepath, env)
     logger.info(f"Config loaded:{config}")
-    es_client = es_util.get_es_client(config.get('elasticsearch'))
+    es_client = get_es_client(config.get('elasticsearch'))
 
     if es_client is None:
         logger.error(f"Failed to get ES client")
@@ -93,4 +103,4 @@ def populate_es(env: str):
 
 
 if __name__ == "__main__":
-    populate_es("local")
+    populate_es("local", sys.argv[1])

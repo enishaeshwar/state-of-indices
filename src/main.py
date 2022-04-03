@@ -15,6 +15,7 @@ def get_count_of_docs(index_data):
     count = index_data_dict.get("count")
     return count
 
+
 def get_alias_state(aliases):
     """
     Get state of index aliases
@@ -45,35 +46,38 @@ def get_state_of_indices(es_client):
     :return: state_of_indices
     """
     state_of_indices = {}
-    data = {}
+
     data_list = []
 
     all_indexes = es_util.get_es_aliases(es_client)
     for index in all_indexes:
-        # Get index name, timestamp
-        index_content_type = index.split('-')[0]
-        index_creation_time_epoch = index.split('-')[1]
-        index_creation_time = time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime(int(index_creation_time_epoch)))
-
-        # Get count of docs
-        index_data = es_util.get_es_index_count(es_client, index)
-        count = get_count_of_docs(index_data)
-
-        # Get aliases and alias state
-        aliases = all_indexes.get(index).get('aliases')
-        is_read_write_enabled = get_alias_state(aliases)
-
-        # Create response object
-        data["index_name"] = index
-        data["index_type"] = index_content_type
-        data["creation_time_epoch"] = index_creation_time_epoch
-        data["creation_time_utc"] = index_creation_time
-        data["doc_count"] = count
-        data["is_read_write_enabled"] = str(is_read_write_enabled)
+        data = process_index(all_indexes, es_client, index)
         data_list.append(data.copy())
 
     state_of_indices["state_of_indices"] = data_list
-    return json.dumps(state_of_indices)
+    return json.dumps(state_of_indices, indent=4)
+
+
+def process_index(all_indexes, es_client, index):
+    data = {}
+    # Get index name, timestamp
+    index_content_type = index.split('-')[0]
+    index_creation_time_epoch = index.split('-')[1]
+    index_creation_time = time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime(int(index_creation_time_epoch)))
+    # Get count of docs
+    index_data = es_util.get_es_index_count(es_client, index)
+    count = get_count_of_docs(index_data)
+    # Get aliases and alias state
+    aliases = all_indexes.get(index).get('aliases')
+    is_read_write_enabled = get_alias_state(aliases)
+    # Create response object
+    data["index_name"] = index
+    data["index_type"] = index_content_type
+    data["creation_time_epoch"] = index_creation_time_epoch
+    data["creation_time_utc"] = index_creation_time
+    data["doc_count"] = count
+    data["is_read_write_enabled"] = str(is_read_write_enabled)
+    return data
 
 
 def run_process(env):
@@ -90,7 +94,6 @@ def run_process(env):
         logger.error("Index fetch failed")
         return
     logger.info(state_of_indices)
-    logger.info("Get all indices completed")
 
 
 if __name__ == "__main__":
