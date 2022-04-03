@@ -1,0 +1,35 @@
+local:
+  elasticsearch:
+    host: localhost
+    port: 9200
+    connection-timeout-ms: 3000
+  indices:
+  - name: media-1641833637
+    aliases:
+      - name: media--read
+        write-enabled: false
+    number-of-docs: 5
+  - name: media-1642933600
+    aliases:
+      - name: media--read
+        write-enabled: false
+      - name: media--write
+        write-enabled: true
+    number-of-docs: 10
+dev:
+  elasticsearch:
+    host: localhost
+    port: 9200
+    connection-timeout-ms: 3000
+  indices:
+  - name: media-1641833637
+    write-enabled: false
+    aliases:
+      - media--read
+    number-of-docs: 5
+  - name: media-1642933600
+    write-enabled: true
+    aliases:
+      - media--read
+      - media--write
+    number-of-docs: 10

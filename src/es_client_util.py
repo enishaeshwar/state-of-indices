@@ -16,10 +16,7 @@ def get_es_client(es_config):
 
 
 def get_es_aliases(es_client):
-    aliases = []
-    alias_list = es_client.indices.get_alias(index="*")
-    for x in alias_list:
-        aliases.append(x)
+    aliases = es_client.indices.get_alias(index="*")
     return aliases
 
 
