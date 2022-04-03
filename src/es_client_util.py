@@ -16,13 +16,21 @@ def get_es_client(es_config):
 
 
 def get_es_aliases(es_client):
+    """
+    Return all aliases
+    :param es_client: Elastic Search client
+    :return: Index aliases
+    """
     aliases = es_client.indices.get_alias(index="*")
     return aliases
 
 
 def get_es_index_count(es_client, index_name):
+    """
+    Get count of documents in index
+    :param es_client: Elastic Search client
+    :param index_name: Index name
+    :return: count of documents
+    """
     return es_client.cat.count(index_name, params={"format": "json"})
 
-
-def get_index_name_and_age(es_client):
-    return None
