@@ -11,6 +11,11 @@ CONFIG_FILE_PATH = BASEPATH + "config/config.yaml"
 
 
 def get_count_of_docs(index_data):
+    """
+    Get count of documents for index
+    :param index_data:
+    :return: count
+    """
     index_data_dict = index_data[0]
     count = index_data_dict.get("count")
     return count
@@ -19,16 +24,15 @@ def get_count_of_docs(index_data):
 def get_alias_state(aliases):
     """
     Get state of index aliases
-    :param all_indexes: List of all indices
-    :param index: Current index name
-    :return: is_read_write_enabled
+    :param aliases: Aliases for an index
+    :return: is an index has read and write enabled
     """
     read_alias = False
     write_alias = False
 
-    vals = list(aliases.values())
+    values = list(aliases.values())
 
-    for val in vals:
+    for val in values:
         if not val.get('is_write_index'):
             read_alias = True
         if val.get('is_write_index'):
@@ -39,26 +43,14 @@ def get_alias_state(aliases):
     return False
 
 
-def get_state_of_indices(es_client):
+def process_index(all_indices, es_client, index):
     """
-    Get all indices, number of documents, timestamp, aliases etc.
-    :param es_client: Elastic Search client
-    :return: state_of_indices
+    Get the number of documents, timestamp, aliases etc.
+    :param all_indices: List fo all indices
+    :param es_client: Elastic search connection object
+    :param index: Current index
+    :return: json data with details on number of docs, timestamp etc
     """
-    state_of_indices = {}
-
-    data_list = []
-
-    all_indexes = es_util.get_es_aliases(es_client)
-    for index in all_indexes:
-        data = process_index(all_indexes, es_client, index)
-        data_list.append(data.copy())
-
-    state_of_indices["state_of_indices"] = data_list
-    return json.dumps(state_of_indices, indent=4)
-
-
-def process_index(all_indexes, es_client, index):
     data = {}
     # Get index name, timestamp
     index_content_type = index.split('-')[0]
@@ -68,7 +60,7 @@ def process_index(all_indexes, es_client, index):
     index_data = es_util.get_es_index_count(es_client, index)
     count = get_count_of_docs(index_data)
     # Get aliases and alias state
-    aliases = all_indexes.get(index).get('aliases')
+    aliases = all_indices.get(index).get('aliases')
     is_read_write_enabled = get_alias_state(aliases)
     # Create response object
     data["index_name"] = index
@@ -80,7 +72,30 @@ def process_index(all_indexes, es_client, index):
     return data
 
 
+def get_state_of_indices(es_client):
+    """
+    Get state of all indices
+    :param es_client: Elastic Search client
+    :return: state_of_indices
+    """
+    state_of_indices = {}
+    data_list = []
+
+    all_indices = es_util.get_es_aliases(es_client)
+    for index in all_indices:
+        data = process_index(all_indices, es_client, index)
+        data_list.append(data.copy())
+
+    state_of_indices["state_of_indices"] = data_list
+    return json.dumps(state_of_indices, indent=4)
+
+
 def run_process(env):
+    """
+    Run process to get state of indices
+    :param env: environment
+    :return: None
+    """
     config = common_util.get_config(CONFIG_FILE_PATH, env)
     logger.info(f"Config loaded:{config}")
 

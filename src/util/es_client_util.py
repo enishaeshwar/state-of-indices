@@ -1,21 +1,12 @@
 from elasticsearch import Elasticsearch
 
 
-def get_es_client_old(es_config):
+def get_es_client(es_config):
     """
     Get Elastic Search client
-    :param es_config: Config data
+    :param es_config: Config object
     :return: Elastic Search connection object
     """
-    es_client = Elasticsearch(
-        es_config.get('clustername'),
-        port=es_config.get('port'),
-        timeout=es_config.get('timeout')
-    )
-    return es_client
-
-
-def get_es_client(es_config):
     es_client: Elasticsearch = Elasticsearch(
             f"http://{es_config.get('host')}:{es_config.get('port')}",
             timeout=es_config.get('connection-timeout-ms')

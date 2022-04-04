@@ -10,10 +10,12 @@ import uuid
 
 def get_config(filepath, env):
     """
-    Get config data
-    :return: config data
+    Get config daya
+    :param filepath: config file path
+    :param env: environment
+    :return: config data as dict
     """
-    cfg = None
+    config_data = None
     with open(filepath, "r") as yaml_file:
         try:
             cfg = yaml.safe_load(yaml_file)
@@ -23,11 +25,11 @@ def get_config(filepath, env):
     return config_data
 
 
-def get_es_client(es_config) -> Elasticsearch:
+def get_es_client(es_config):
     """
     Get elastic search client
-    :param es_config:
-    :return: connection object
+    :param es_config: Elastic search config data
+    :return: Elastic search connection object
     """
     es_client = None
     try:
@@ -42,11 +44,22 @@ def get_es_client(es_config) -> Elasticsearch:
 
 
 def get_es_aliases(es_client):
+    """
+    Return all aliases
+    :param es_client: Elastic Search client
+    :return: Index aliases
+    """
     alias_list = es_client.indices.get_alias(index="*")
     return alias_list
 
 
 def create_index(index_data, es_client):
+    """
+    Create an index
+    :param index_data: Index data
+    :param es_client: Elastic search connection object
+    :return: None
+    """
     try:
         es_client.indices.create(index=index_data["name"])
         for alias in index_data["aliases"]:
@@ -58,6 +71,12 @@ def create_index(index_data, es_client):
 
 
 def create_indices(indices_to_create, es_client):
+    """
+    Create indices
+    :param indices_to_create: list of indices to create
+    :param es_client: Elastic search connection object
+    :return: None
+    """
     aliases = get_es_aliases(es_client)
     logger.info(f"Present Aliases:{aliases}")
     for index_data in indices_to_create:
@@ -69,6 +88,13 @@ def create_indices(indices_to_create, es_client):
 
 
 def populate_random_documents(index, num_docs, es_client):
+    """
+    Populate documents to index
+    :param index: Name of index
+    :param num_docs: Number of docs
+    :param es_client: Elastic search connection object
+    :return:
+    """
     for i in range(0, num_docs):
         doc_to_index = get_random_doc()
         response = es_client.index(
@@ -80,16 +106,32 @@ def populate_random_documents(index, num_docs, es_client):
 
 
 def get_random_doc():
+    """
+    Create a document
+    :return: json document
+    """
     return {"id": str(uuid.uuid4()),
             "data": ''.join(random.choices(string.ascii_letters + string.digits, k=10))}
 
 
 def cleanup_es(indices_to_cleanup, es_client):
+    """
+    Delete indices
+    :param indices_to_cleanup: indices to delete
+    :param es_client: Elastic search connection object
+    :return: None
+    """
     for index in indices_to_cleanup:
         es_client.indices.delete(index=index["name"], ignore=[400, 404])
 
 
-def populate_es(env: str, config_filepath: str):
+def populate_es(env, config_filepath):
+    """
+    Populate ES with test indices, insert documents, add aliases
+    :param env: environment
+    :param config_filepath: path of the config file
+    :return:
+    """
     config = get_config(config_filepath, env)
     logger.info(f"Config loaded:{config}")
     es_client = get_es_client(config.get('elasticsearch'))

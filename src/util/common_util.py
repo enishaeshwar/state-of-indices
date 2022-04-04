@@ -3,10 +3,12 @@ import yaml
 
 def get_config(filepath, env):
     """
-    Get config data
-    :return: config data
+    Parse config.yaml and return environment specific config data
+    :param filepath: config file path
+    :param env: environment
+    :return: dictionary of config_data
     """
-    cfg = None
+    config_data = None
     with open(filepath, "r") as yaml_file:
         try:
             cfg = yaml.safe_load(yaml_file)
