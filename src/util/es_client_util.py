@@ -8,9 +8,9 @@ def get_es_client(es_config):
     :return: Elastic Search connection object
     """
     es_client: Elasticsearch = Elasticsearch(
-            f"http://{es_config.get('host')}:{es_config.get('port')}",
-            timeout=es_config.get('connection-timeout-ms')
-        )
+        f"http://{es_config.get('host')}:{es_config.get('port')}",
+        timeout=es_config.get('connection-timeout-ms')
+    )
     return es_client
 
 
@@ -32,4 +32,3 @@ def get_es_index_count(es_client, index_name):
     :return: count of documents
     """
     return es_client.cat.count(index_name, params={"format": "json"})
-

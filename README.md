@@ -23,7 +23,15 @@ docker run -d --name elasticsearch --net dockernetwork -p 9200:9200 -p 9300:9300
 ```
 
 - Install all dependencies listed in file `prerequisite/requirements.txt` 
-- Run the file `populate_es.py`
+```
+pip install -r prerequisite/requirements.txt
+
+```
+- Run the file `prerequisite/populate_es.py`
+```
+python prerequisite/populate_es.py  prerequisite/populate_es_config.yaml
+
+```
 
 ### To get state of indices
 - Build the Dockerfile
